@@ -1,0 +1,2069 @@
+<!DOCTYPE html>
+<html data-ng-app="golfzonApp">
+<head>
+    <meta name="viewport" content="width=device-width,user-scalable=no">
+    <meta charset="utf-8">
+    <title>SMART CADDIE</title>
+    <!-- build:css ./styles/smartcaddie-1.0.0.0.css -->
+    <!-- <link rel="stylesheet" href="css/style.css"> -->
+    <link rel="stylesheet" href="css/leaflet-1.4.0.css">
+    <!-- endbuild -->
+    <!-- @if DEBUG -->
+
+    <style>
+        
+        .view-animate-container{display:none;}
+
+        .mapDebug .map{position:absolute; top:0;left:0; width:100%; height:100%;}
+        
+        .inpDebug{position:absolute;z-index:1;display:block;bottom:0;height:auto;padding-left:10px;padding-bottom: 60px;}
+        .inpDebug .inpCenter{position:relative;z-index:1;display:table;}
+        .inpDebug label{position:relative;display: inline-block;height:36px;line-height:36px;text-align:center;cursor: pointer;font-size:15px;border-radius: .25em;color: #fff;background-color: #337ab7;border:1px solid #2e6da4;margin-bottom: 5px;}
+        /* .inpDebug .inpCenter input{position:relative;display: inline-block;margin-left: 10px;width:150px;} */
+
+        /* .inpDebug .inpFile{width:100%;}
+        .inpDebug .inpFile .inpRange{width: calc(100% - 120px);} */
+        
+        .inpFile{position:absolute;width:100%;height:50px;bottom:0;display:block;z-index:2;padding-left: 10px;}
+        .inpFile label{position:relative;display: inline-block;height:36px;line-height:36px;text-align:center;cursor: pointer;font-size:15px;border-radius: .25em;color: #fff;background-color: #337ab7;border:1px solid #2e6da4;}
+        .inpFile input{position:absolute;display: inline-block;margin-left: 10px;}
+        .inpFile .inpRange{position:absolute;display: inline-block;left: 160px;top: 0px;width: calc(100% - 190px);}
+
+        .hwKeys{position:absolute; top:0px;left:0px; width:380px; height:380px;}
+        .hwKeys .hwKeyBack{position:absolute; top:50px;left:350px; width:30px; height:60px; background: #3f3f3f; transform: rotate(-30deg); z-index: 10;}
+        .hwKeys .hwKeyHome{position:absolute; top:250px;left:350px; width:30px; height:60px; background: #3f3f3f; transform: rotate(30deg); z-index: 10;}
+        
+        .gm-style-iw0 {
+            background-color: rgb(237, 28, 36);
+            border: 1px solid rgba(72, 181, 233, 0.6);
+            border-radius: 10px;
+            box-shadow: 0 1px 6px rgba(178, 178, 178, 0.6);
+            color: rgb(255, 255, 255) !important;
+            font-family: gothambook;
+            text-align: center;
+            top: 15px !important;
+            width: 150px !important;
+        }
+
+        .gm-style-iw {
+            /* font-size: 8px !important; */
+            padding: 5px 0px 0px 5px !important;
+            top: 0px !important; 
+            color: rgb(0, 0, 0) !important;
+        }
+
+        /*
+        .gm-style-iw button {
+            display: none !important;
+        }
+        */
+
+
+
+        /* Important part */
+        .modal-dialog{
+            overflow-y: initial !important
+        }
+        .modal-body{
+            height: calc(100vh - 200px);
+            overflow-y: auto;
+        }
+
+
+        span.red {color: red;}
+        span.magenta {color: magenta;}
+        span.yellow {color: yellow;}
+        span.blue {color: blue;}
+
+    </style>
+
+    <!--
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+    -->
+
+    <!--BOOTSTRAP JS--
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+    --BOOTSTRAP CSS--
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    -->
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    <!-- Option 1: Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+
+
+    <!-- @endif -->
+</head>
+<body>
+<!-- @if DEBUG -->
+<div class="mapDebug">
+    <div id="map" class="map"></div>
+</div>
+
+<div class="inpDebug">
+    <div class="inpCenter">
+        <label style="" onclick="javascript:searchViewLogs()">업데이트뷰 로그</label><label style="">홀아웃표시<input type="checkbox" id="check_holeout" ></label><br>
+        <label style="" onclick="javascript:searchSmartPinLogs()">스마트핀 로그</label><br>
+        <label style="" onclick="javascript:searchShotLogs()">샷트래킹 로그</label><br>
+        <label style="">정보표시<input type="checkbox" id="info_view" onchange="javascript:toggleInfos()" ></label><br>
+        <!-- <label style="">샷표시<input type="checkbox" id="shot_view" onchange="javascript:toggleShots()" ></label><br> -->
+        <label id="center-label" >GPS이동 </label><input type="text" id="center-input"><br>
+        <label style="">클럽파일 <input type="file" name="club_file" id="club_file"></label><br>
+    </div>
+</div>
+<div class="inpFile">
+    <label>로그파일 <input type="file" name="file" id="file"></label>
+    <input class="inpRange" type="range" id="myRange" value="0">
+</div>
+    
+</div>
+<!-- @endif -->
+<div data-ng-view class="view-animate-container"></div>
+
+<!-- Modal -->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLongTitle">Modal title</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          ...
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary">Save changes</button>
+        </div>
+      </div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div id="myToast" class="toast align-items-center" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="d-flex">
+      <div class="toast-body">
+      Hello, world! This is a toast message.
+     </div>
+      <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+    </div>
+</div>
+<div id="myToast0" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+    <!-- <div class="toast-header">
+      <img src="..." class="rounded mr-2" alt="...">
+      <strong class="mr-auto">Bootstrap</strong>
+      <small>11 mins ago</small>
+      <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button> 
+    </div> -->
+    <div class="toast-body">
+      Hello, world! This is a toast message.
+    </div>
+</div>
+
+<system-popup></system-popup>
+<!-- <page-loading class="loading"><p><img src="images/img_load.png" alt="" /></p></page-loading> -->
+
+<!-- @exclude -->
+<!-- <script src="js/lib/angularjs-1.5.11.min.js"></script> -->
+<!-- <script src="js/lib/angular-1.7.5.js"></script>
+<script src="js/lib/angular-route-1.7.5.min.js"></script>
+<script src="js/lib/angular-animate-1.7.5.min.js"></script>
+<script src="js/lib/angular-sanitize-1.7.5.min.js"></script>
+<script src="js/lib/angular-scroll-1.0.2.js"></script>
+<script src="js/lib/angular-translate-2.18.1.js"></script>
+<script src="js/lib/angular-translate-loader-static-files-2.18.1.js"></script>
+<script src="js/lib/ngLangcode-1.3.0.mod.js"></script> -->
+<script src="js/lib/geolib-2.0.21.min.js"></script>
+<!-- <script src="js/lib/promise-button.js"></script>
+<script src="js/lib/gz-evt-package.js"></script> -->
+<script src="js/lib/infinite-list.js"></script>
+<script src="js/lib/leaflet-1.4.0.js"></script>
+<script src="js/lib/leaflet.semicircle-2.0.2.js"></script>
+<script src="js/lib/socket.io.slim.js"></script>
+<script src="js/lib/zip.js"></script>
+<script src="js/lib/zip-ext.js"></script>
+<script src="js/lib/aes.js"></script>
+<script src="js/lib/sha256.js"></script>
+<script src="js/lib/d3.js"></script>
+<script src="js/lib/jsts-1.2.1.min.js"></script>
+<script src="js/lib/utm-1.1.1.js"></script>
+
+<!-- <script src="js/lib/clipboard.min.js"></script> -->
+
+<!-- @endexclude -->
+
+<!-- build:js ./scripts/smartcaddie-1.0.0.0.js -->
+
+<!-- endbuild -->
+
+<!-- @if DEBUG -->
+<script>
+    
+    
+    var requestFileSystem = window.webkitRequestFileSystem || window.mozRequestFileSystem || window.requestFileSystem;
+
+    var onerror = function(message) {
+        alert(message);
+    };
+
+    var model = (function() {
+        return {
+            getEntries : function(file, onend) {
+                window.zip.createReader(new window.zip.BlobReader(file), function(zipReader) {
+                    zipReader.getEntries(onend);
+                }, onerror);
+            },
+            getEntryFile : function(entry, creationMethod, onend, onprogress) {
+                var writer, zipFileEntry;
+
+                function getData() {
+                    entry.getData(writer, function(blob) {
+                        var blobURL = creationMethod == "Blob" ? window.URL.createObjectURL(blob) : zipFileEntry.toURL();
+                        onend(blobURL);
+                    }, onprogress);
+                }
+                if (creationMethod == "Blob") {
+                    writer = new window.zip.BlobWriter();
+                    getData();
+                }
+            }
+        };
+    })();
+
+
+
+    (function() {
+        /*
+        var fileInput = document.getElementById("file-input");
+        function download(entry) {
+            window.tempCurrentMap = {};
+            model.getEntryFile(entry, 'Blob', function(blobURL) {
+                var fileName = entry.filename.charAt(0) === '/' ? entry.filename : '/' + entry.filename;
+                window.tempCurrentMap[fileName] = blobURL;
+            });
+        }
+        fileInput.addEventListener('change', function() {
+            model.getEntries(fileInput.files[0], function(entries) {
+                entries.forEach(function(entry) {
+                    download(entry);
+                });
+
+            });
+        }, false);
+        */
+    })();
+
+    var centerInput = document.getElementById("center-input");
+    var centerLabel = document.getElementById("center-label");
+        
+    (function() {
+        
+        centerLabel.addEventListener('click', function() {
+            var value = centerInput.value;
+            var ary = value.split(',');
+            var lat = ary[0].trim();
+            var lng = ary[1].trim();
+            setCenter(lat, lng);
+        });
+
+        //centerInput.value = window.latitude + ',' + window.longitude;
+    })();
+
+    function setCenter(lat, lng, index) {
+        console.log("setCenter", lat, lng, index);
+
+        var center = new google.maps.LatLng(lat, lng);
+        if(marker){
+            marker.position = center;
+        }
+        map.setCenter(center);
+
+        // check input text
+        if(centerInput && centerInput.value != lat+","+lng){
+            centerInput.value = lat+","+lng;
+        }
+
+        // check range
+        if (index === undefined && line.length > parseInt(myRange.value)) {
+            var latLng = line[parseInt(myRange.value)].LatLng;
+            if(latLng.lat() != lat || latLng.lng() != lng){
+                var latLng0 = {latitude:lat, longitude:lng};
+                for(var i = 0; i < line.length; i++){
+                    latLng = line[i].LatLng;
+                    if(geolib.getDistance(latLng.toJSON(), latLng0) <= 1.0){
+                        console.log("setCenter", "set range", i);
+                        myRange.value = i;
+                        break;
+                    }
+                }
+            }
+            
+        }
+    }
+    
+    function perimeterFormat(data) {
+        var output = '';
+
+        if(!data){
+            return '';
+        }
+
+        var ary = data.split(',');
+
+        ary.forEach(function (item, index, array) {
+            var ary2 = item.split(' '); 
+            var loc = {
+                longitude:parseFloat(ary2[0]),
+                latitude:parseFloat(ary2[1])
+            };
+            
+            if(output.length > 0){
+                output += ',';
+            }
+            output += JSON.stringify(loc);
+        });
+
+        return output;
+    }
+
+    function rgb(minimum, maximum, value) {
+        var ratio = 2 * (value - minimum) / (maximum - minimum);
+        b = Math.floor(Math.max(0, 255 * (1 - ratio)));
+        r = Math.floor(Math.max(0, 255 * (ratio - 1)));
+        g = 255 - b - r;
+
+        var hexStr = ("00" + r.toString(16)).slice(-2);
+        hexStr += ("00" + g.toString(16)).slice(-2);
+        hexStr += ("00" + b.toString(16)).slice(-2);
+        hexStr = "#" + hexStr;
+        return hexStr
+    }
+
+    var marker;
+    var overlaysArray = [];
+    var infosArray = [];
+    var shotsArray = [];
+    var line = [],
+            path = [],
+            polyline;
+
+    function addMarker(location, title = '', icon = null) {
+        console.log('addMarker', location);
+        
+        var options = {
+            position: location,
+            map: window.map || null
+        };
+
+        if(title !== undefined && title !== null && title != ""){
+            options.title = title;
+        }
+
+        if(icon !== undefined && icon !== null && icon){
+            options.content = icon;
+        }
+
+        var _marker = new google.maps.marker.AdvancedMarkerElement(options);
+        addOverlay(_marker);
+    }
+
+    function addInfo(location, content) {
+        console.log('addInfo', location, content);
+
+        var info = new google.maps.InfoWindow({
+            content: content,
+            position: location,
+            padding: 0,
+            map: null
+        });
+        infosArray.push(info);
+        addOverlay(info);
+    }
+
+    function clearInfos() {
+        console.log('clearInfos', infosArray.length);
+
+        if (infosArray) {
+            for (i in infosArray) {
+                infosArray[i].setMap(null);
+            }
+        }
+
+    }
+
+    function showInfos() {
+        console.log('showInfos', infosArray.length);
+        
+        if (infosArray) {
+            for (i in infosArray) {
+                infosArray[i].setMap(map);
+            }
+        }
+    }
+
+    // Deletes all markers in the array by removing references to them
+    function deleteInfos() {
+        console.log('deleteInfos', infosArray.length);
+        
+        clearInfos();
+        
+        for (var i = infosArray.length - 1; i >= 0; i--) {
+            var info = infosArray[i];
+            if(!info){
+                continue;
+            }
+            var idx = overlaysArray.indexOf(info);
+            if(idx < 0){
+                continue;
+            }
+            overlaysArray.splice(idx, 1)
+        }
+
+        infosArray.length = 0;
+    }
+
+    function toggleInfos(){
+        var info_view = document.getElementById('info_view').checked;
+        if(info_view){
+            showInfos();
+        }
+        else{
+            clearInfos();
+        }
+    }
+
+
+    function addShot(location, content) {
+        console.log('addShot', location, content);
+
+        var shot = new google.maps.InfoWindow({
+            content: content,
+            position: location,
+            padding: 0,
+            map: null
+        });
+        shotsArray.push(shot);
+        addOverlay(shot);
+    }
+
+    function clearShots() {
+        console.log('clearShots', shotsArray.length);
+
+        if (shotsArray) {
+            for (i in shotsArray) {
+                shotsArray[i].setMap(null);
+            }
+        }
+
+    }
+
+    function showShots() {
+        console.log('showShots', shotsArray.length);
+        
+        if (shotsArray) {
+            for (i in shotsArray) {
+                shotsArray[i].setMap(map);
+            }
+        }
+    }
+
+    // Deletes all markers in the array by removing references to them
+    function deleteShots() {
+        console.log('deleteShots', shotsArray.length);
+        
+        clearShots();
+        
+        for (var i = shotsArray.length - 1; i >= 0; i--) {
+            var info = shotsArray[i];
+            if(!info){
+                continue;
+            }
+            var idx = overlaysArray.indexOf(info);
+            if(idx < 0){
+                continue;
+            }
+            overlaysArray.splice(idx, 1)
+        }
+
+        shotsArray.length = 0;
+    }
+
+    function toggleShots(){
+        var shot_view = document.getElementById('shot_view').checked;
+        if(shot_view){
+            showShots();
+        }
+        else{
+            clearShots();
+        }
+    }
+
+    function addPath(location) {
+        var path = new google.maps.marker.AdvancedMarkerElement({
+            position: location,
+            map: null
+        });
+        addOverlay(marker);
+    }
+
+    function addOverlay(overlay) {
+        overlaysArray.push(overlay);
+    }
+
+    // Removes the overlays from the map, but keeps them in the array
+    function clearOverlays() {
+        console.log('clearOverlays', overlaysArray.length);
+
+        if (overlaysArray) {
+            for (i in overlaysArray) {
+                overlaysArray[i].setMap(null);
+            }
+        }
+
+    }
+
+    // Shows any overlays currently in the array
+    function showOverlays() {
+        console.log('showOverlays', overlaysArray.length);
+        
+        if (overlaysArray) {
+            for (i in overlaysArray) {
+                overlaysArray[i].setMap(map);
+            }
+        }
+    }
+
+    // Deletes all markers in the array by removing references to them
+    function deleteOverlays() {
+        console.log('deleteOverlays', overlaysArray.length);
+        
+        clearOverlays();
+        overlaysArray.length = 0;
+    }
+
+    function setGPSLog(gpsLogList){
+        
+        line = [];
+        for (low = 0; low < gpsLogList.length; low++) {
+            if (gpsLogList[low].latitude && gpsLogList[low].longitude && gpsLogList[low].errorRange < 30 && gpsLogList[low].errorRange >= 0) {
+                
+                var latLng = new google.maps.LatLng(gpsLogList[low].latitude, gpsLogList[low].longitude);
+
+                line.push({
+                    LatLng: latLng,
+                    altitude: gpsLogList[low].altitude,
+                    timeStamp: gpsLogList[low].timeStamp
+                    
+                });
+                path.push(latLng);
+
+                var text = gpsLogList[low].text || '';
+                var sColor = gpsLogList[low].color || rgb(0, 256, 128);
+                var sScale = gpsLogList[low].scale || 3;
+                var coord1 = path[path.length-1];
+                var circle = new google.maps.Circle({
+                    map: map,
+                    center: coord1,
+                    radius: sScale * 2,
+                    fillColor: sColor,
+                    fillOpacity: (sScale * 0.1 > 1 ? 1 : sScale * 0.1),
+                    strokeOpacity: 0.0
+                });
+
+                addOverlay(circle);
+
+                if(text){
+                    addInfo(latLng, text);
+                }
+            }
+        }
+
+        if(line.length == 0){
+            alert('좌표 데이터가 없습니다.');
+            return;
+        }
+
+        window.map.setCenter(line[0].LatLng);
+
+        /*
+        polyline = new window.google.maps.Polyline({
+            path: path,
+            geodesic: true,
+            strokeColor: '#FF0000',
+            strokeOpacity: 1.0,
+            strokeWeight: 2,
+            map: window.map
+        });
+        */
+        /*
+        for(var i = 1; i < path.length; i++){
+            var coord1 = path[i-1];
+            var coord1 = path[i];
+            //bounds.extend(coord1);
+            var coord2 = path[i];
+            //bounds.extend(coord2);
+
+            var score = i%256;
+            var polyline = new google.maps.Polyline({
+                map: map,
+                path: [coord1, coord2],
+                strokeColor: rgb(0, 256, score),
+                strokeWeight: 5,
+                strokeOpacity: 0.3
+            });
+        }
+        */
+
+        var myRange = window.document.getElementById('myRange');
+        myRange.min = 0;
+        myRange.max = parseInt(line.length, 10);
+        myRange.defaultValue = 0;
+        myRange.addEventListener("input", function (e) {
+            if (line.length > parseInt(e.target.value)) {
+                //marker.setPosition(line[e.target.value].LatLng);
+                //window.map.setCenter(line[e.target.value].LatLng);
+                var latLng = line[e.target.value].LatLng;
+                if(latLng){
+                    setCenter(latLng.lat(), latLng.lng(), parseInt(e.target.value));
+                }
+            }
+        });
+    }
+
+    function getGPSLogAry(){
+        
+        var ary = [];
+        for (low = 0; low < gpsLogList.length; low++) {
+            if (gpsLogList[low].latitude && gpsLogList[low].longitude && gpsLogList[low].errorRange < 30 && gpsLogList[low].errorRange >= 0) {
+                
+                if(ary.length > 0 && geolib.getDistanceSimple(ary[ary.length - 1], gpsLogList[low]) < 1){
+                    continue;
+                }
+
+                ary.push({
+                    latitude: gpsLogList[low].latitude,
+                    longitude: gpsLogList[low].longitude,
+                    altitude: gpsLogList[low].altitude
+                });
+                
+            }
+        }
+
+        if(ary.length == 0){
+            alert('좌표 데이터가 없습니다.');
+            return;
+        }
+
+        return ary;
+    }
+
+    function search(filters, show_alert) {
+        
+        if(show_alert === undefined){
+            show_alert = true;
+        }
+
+        if(!logs || logs.length == 0){
+            if(show_alert){
+                alert('로그파일의 정보가 없습니다!\n파일을 다시 확인 후 이용해주세요!');
+                return;
+            }
+            else {
+                return [];
+            }
+        }
+
+        var list = [];
+        var count = logs.length;
+        for(var i = 0; i < count; i++){
+            var log = logs[i];
+            if(!log){
+                continue;
+            }
+
+            if(!filters || filters.length == 0){
+                list.push(log);
+                continue;
+            }
+
+            for(var j = 0; j < filters.length; j++){
+                var filter = filters[j];
+                if(!filter){
+                    continue;
+                }
+
+                if(log.indexOf(filter) >= 0){
+                    list.push(log);
+                    break;
+                }
+            }
+        }
+
+        if(list.length == 0){
+            if(show_alert){
+                alert('검색된 정보가 없습니다!\n검색어를 다시 확인 후 이용해주세요!');
+                return;
+            }
+            else{
+                return [];
+            }
+        }
+
+        if(show_alert){
+            showPopup('검색 결과', list.join('<br/>'));
+        }
+        else{
+            return list;
+        }
+        
+    }
+
+    function getTime(log) {
+        var time = 0;
+
+        if(log && log.length > 0){
+            var list = log.split(" ");
+            if(list && list.length > 0){
+                var str = list[0];
+                if(str && str.length == 12){
+                    // 14:17:28.518
+                    var cols = str.split(":");
+                    if(cols && cols.length == 3){
+                        time = parseInt(cols[0]) * 3600 + parseInt(cols[1]) * 60 + parseFloat(cols[2]);
+                    }
+                }
+            }
+        }
+
+        return time;
+    }
+
+    function getGpsLogs(){
+        var str = "";
+        var last_time = 0;
+        for(var i = 0; i < gpsLogList.length; i++){
+            var gpsLog = gpsLogList[i];
+            str += gpsLog.latitude + "," + gpsLog.longitude + "," + (isNaN(gpsLog.altitude) ? 0 : gpsLog.altitude) + "," + (last_time > 0 ? gpsLog.timeStamp - last_time : 0) + "\n";
+            last_time = gpsLog.timeStamp;
+        }
+
+        return str;
+    }
+
+    function downloadGpsLogs() {
+
+        var msg = getGpsLogs();
+
+        showPopup('GPS로그 리스트', msg, 'Close', 'Download', null, function(){
+            
+
+            var fileName = "GPSLOGS_" + dateToString(new Date()) + ".csv";
+        
+
+            downloadFile(fileName, getGpsLogs());
+
+            /*var clipboard = new ClipboardJS('#myModal .btn-primary', {
+                //container: $('#myModal .modal-body')
+                text: function(trigger) {
+                    return $('#myModal .modal-body').html();
+                }
+            });*/
+            //clipboard.destroy();
+
+        });
+    }
+
+    function downloadFile(fileName, data) {
+        if(!fileName){
+            fileName = dateToString(new Date()) + ".txt";
+        }
+
+        if(typeof data === 'object'){
+            data = JSON.stringify(data);
+        }
+
+        var url = window.URL.createObjectURL(new Blob([data]));
+        var link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', fileName);
+        document.body.appendChild(link);
+        link.click();
+
+        setTimeout(function(){
+            document.body.removeChild(link);
+        }, 2000);
+    }
+
+    function leftPad(value) { 
+        if (value >= 10) { 
+            return value; 
+        } 
+        return `0${value}`; 
+    } 
+
+    /**
+     * dateToString(new Date(2021, 0, 1), '-');
+     */
+        function dateToString(source, delimiter = '') { 
+        const year = source.getFullYear(); 
+        const month = leftPad(source.getMonth() + 1); 
+        const day = leftPad(source.getDate()); 
+        const hours = leftPad(source.getHours()); 
+        const minutes = leftPad(source.getMinutes()); 
+        const seconds = leftPad(source.getSeconds()); 
+
+        return [year, month, day, hours, minutes, seconds].join(delimiter); 
+    } 
+    
+    function searchViewLogs() {
+        
+        var options = [' <- ', 'W WhsSensorTracker onLocations ', 'W WhsSensorTracker onLocation ', ' updateView ', ' onResume ', 'onScreenStateChanged', 'ACTION_DISTANCE_UPDATE', 'systemPopup'];
+        var check_holeout = document.getElementById("check_holeout").checked;
+        if(check_holeout){
+            options.push('updateLocations');
+            options.push('checkHoleOut');
+            options.push('ACTION_HOLEOUT');
+        }
+
+        var list = search(options, false);
+        
+        if(!list || list.length == 0){
+            alert('검색된 정보가 없습니다!\n검색어를 다시 확인 후 이용해주세요!');
+            return;
+        }
+        
+        var msg = '';
+        var last_location = 0;
+        var last_resume = 0;
+        var color = '';
+        var length = list.length;
+        for(var i = 0; i < length; i++){
+            var log = list[i];
+            if(!log){
+                continue;
+            }
+            color = '';
+            if(log.indexOf('onLocation') >= 0){
+                // if(last_location == 0){
+                //     last_location = getTime(log);
+                // }
+                last_location = getTime(log);
+            }
+            else if(log.indexOf('onResume') >= 0){
+                // if(last_location == 0){
+                //     last_location = getTime(log);
+                // }
+                last_resume = getTime(log);
+            }
+            else if(log.indexOf(' <- ') >= 0){
+                // if(last_location == 0){
+                //     last_location = getTime(log);
+                // }
+                last_resume = getTime(log);
+            }
+            else if(log.indexOf('updateView') >= 0){
+                var check_time = 0;
+                var check_type = '';
+                if(last_location > last_resume) {
+                    check_time = last_location;
+                    check_type = 'location';
+                }
+                else if(last_resume > last_location){
+                    check_time = last_resume;
+                    check_type = 'resume';
+                }
+
+                // last_location = 0;
+                // last_resume = 0;
+
+                if(check_time > 0){
+                    var time = getTime(log);
+
+                    if(time > check_time){
+                        if((time - check_time) > 1.0){
+                            color = 'red';
+                        }
+                        else if((time - check_time) > 0.5){
+                            color = 'magenta';
+                        }
+                        else{
+                            color = 'blue';
+                        }
+
+                        log += ' - delay time: ' + (time - check_time).toFixed(3) + ', ' + check_type;
+                        list[i] = log;
+                    }
+                }
+                else{
+                    list[i] = log;
+                }
+            }
+
+            if(color){
+                msg += "<span class='"+color+"'>" + log + "</span><br/>";
+            }
+            else{
+                msg += log + '<br/>';
+            }
+        }
+
+        /*
+        var clipboard = new ClipboardJS('#myModal .btn-primary', {
+            //container: $('#myModal .modal-body')
+            text: function(trigger) {
+                return list.join("\n");
+            }
+        });
+
+        clipboard.on('success', function(e) {
+            console.info('Action:', e.action);
+            console.info('Text:', e.text);
+            console.info('Trigger:', e.trigger);
+        
+            e.clearSelection();
+        });
+        
+        clipboard.on('error', function(e) {
+            console.error('Action:', e.action);
+            console.error('Trigger:', e.trigger);
+        });
+        */
+
+        showPopup('업데이트뷰 로그 검색 결과', msg, 'Close', 'Copy', null, function(){
+            copyToClipboard(list.join("\n"));
+            /*var clipboard = new ClipboardJS('#myModal .btn-primary', {
+                //container: $('#myModal .modal-body')
+                text: function(trigger) {
+                    return $('#myModal .modal-body').html();
+                }
+            });*/
+            //clipboard.destroy();
+
+        });
+        
+    }
+
+    function searchSmartPinLogs() {
+        
+        var list = search(['user-setting', 'Beacon', 'SmartPin', 'W WhsSensorTracker onLocations ', 'W WhsSensorTracker onLocation ', ' updateView '], false);
+        
+        if(!list || list.length == 0){
+            alert('검색된 정보가 없습니다!\n검색어를 다시 확인 후 이용해주세요!');
+            return;
+        }
+        
+        var msg = '';
+        var last_location = 0;
+        var last_resume = 0;
+        var color = '';
+        var length = list.length;
+        for(var i = 0; i < length; i++){
+            var log = list[i];
+            if(!log){
+                continue;
+            }
+            color = '';
+            if(log.indexOf('onScanResult') >= 0){
+                color = 'blue';
+            }
+            else if(log.indexOf('updateSmartPinCurrentHole') >= 0){
+                color = 'red';
+            }
+            else if(log.indexOf('updateSmartPin') >= 0){
+                color = 'magenta';
+            }
+            
+
+            // if(log.indexOf('onLocation') >= 0){
+            //     // if(last_location == 0){
+            //     //     last_location = getTime(log);
+            //     // }
+            //     last_location = getTime(log);
+            // }
+            // else if(log.indexOf('onResume') >= 0){
+            //     // if(last_location == 0){
+            //     //     last_location = getTime(log);
+            //     // }
+            //     last_resume = getTime(log);
+            // }
+            // else if(log.indexOf(' <- ') >= 0){
+            //     // if(last_location == 0){
+            //     //     last_location = getTime(log);
+            //     // }
+            //     last_resume = getTime(log);
+            // }
+            // else if(log.indexOf('updateView') >= 0){
+            //     var check_time = 0;
+            //     var check_type = '';
+            //     if(last_location > last_resume) {
+            //         check_time = last_location;
+            //         check_type = 'location';
+            //     }
+            //     else if(last_resume > last_location){
+            //         check_time = last_resume;
+            //         check_type = 'resume';
+            //     }
+
+            //     // last_location = 0;
+            //     // last_resume = 0;
+
+            //     if(check_time > 0){
+            //         var time = getTime(log);
+
+            //         if(time > check_time){
+            //             if((time - check_time) > 1.0){
+            //                 color = 'red';
+            //             }
+            //             else if((time - check_time) > 0.5){
+            //                 color = 'magenta';
+            //             }
+            //             else{
+            //                 color = 'blue';
+            //             }
+
+            //             log += ' - delay time: ' + (time - check_time).toFixed(3) + ', ' + check_type;
+            //             list[i] = log;
+            //         }
+            //     }
+            //     else{
+            //         list[i] = log;
+            //     }
+            // }
+
+            if(color){
+                msg += "<span class='"+color+"'>" + log + "</span><br/>";
+            }
+            else{
+                msg += log + '<br/>';
+            }
+        }
+
+        /*
+        var clipboard = new ClipboardJS('#myModal .btn-primary', {
+            //container: $('#myModal .modal-body')
+            text: function(trigger) {
+                return list.join("\n");
+            }
+        });
+
+        clipboard.on('success', function(e) {
+            console.info('Action:', e.action);
+            console.info('Text:', e.text);
+            console.info('Trigger:', e.trigger);
+        
+            e.clearSelection();
+        });
+        
+        clipboard.on('error', function(e) {
+            console.error('Action:', e.action);
+            console.error('Trigger:', e.trigger);
+        });
+        */
+
+        showPopup('스마트핀 로그 검색 결과', msg, 'Close', 'Copy', null, function(){
+            copyToClipboard(list.join("\n"));
+            /*var clipboard = new ClipboardJS('#myModal .btn-primary', {
+                //container: $('#myModal .modal-body')
+                text: function(trigger) {
+                    return $('#myModal .modal-body').html();
+                }
+            });*/
+            //clipboard.destroy();
+
+        });
+        
+    }
+
+    function searchShotLogs() {
+        
+        var list = search(['user-setting', 'Golf Shot Count', 'onGolfShotCount', 'checkRoundShot', 'setTracking', 'W WhsSensorTracker onLocations ', 'W WhsSensorTracker onLocation ', ' updateView '], false);
+        
+        if(!list || list.length == 0){
+            alert('검색된 정보가 없습니다!\n검색어를 다시 확인 후 이용해주세요!');
+            return;
+        }
+        
+        var msg = '';
+        var last_location = 0;
+        var last_resume = 0;
+        var color = '';
+        var length = list.length;
+        for(var i = 0; i < length; i++){
+            var log = list[i];
+            if(!log){
+                continue;
+            }
+            color = '';
+            if(log.indexOf('ExerciseSensorService Received capabilities') != -1){
+                continue;
+            }
+            else if(log.indexOf('Golf Shot Count') >= 0){
+                color = 'blue';
+            }
+            else if(log.indexOf('setTracking') >= 0){
+                color = 'red';
+            }
+            else if(log.indexOf('checkRoundShot') >= 0){
+                color = 'magenta';
+            }
+            
+
+            // if(log.indexOf('onLocation') >= 0){
+            //     // if(last_location == 0){
+            //     //     last_location = getTime(log);
+            //     // }
+            //     last_location = getTime(log);
+            // }
+            // else if(log.indexOf('onResume') >= 0){
+            //     // if(last_location == 0){
+            //     //     last_location = getTime(log);
+            //     // }
+            //     last_resume = getTime(log);
+            // }
+            // else if(log.indexOf(' <- ') >= 0){
+            //     // if(last_location == 0){
+            //     //     last_location = getTime(log);
+            //     // }
+            //     last_resume = getTime(log);
+            // }
+            // else if(log.indexOf('updateView') >= 0){
+            //     var check_time = 0;
+            //     var check_type = '';
+            //     if(last_location > last_resume) {
+            //         check_time = last_location;
+            //         check_type = 'location';
+            //     }
+            //     else if(last_resume > last_location){
+            //         check_time = last_resume;
+            //         check_type = 'resume';
+            //     }
+
+            //     // last_location = 0;
+            //     // last_resume = 0;
+
+            //     if(check_time > 0){
+            //         var time = getTime(log);
+
+            //         if(time > check_time){
+            //             if((time - check_time) > 1.0){
+            //                 color = 'red';
+            //             }
+            //             else if((time - check_time) > 0.5){
+            //                 color = 'magenta';
+            //             }
+            //             else{
+            //                 color = 'blue';
+            //             }
+
+            //             log += ' - delay time: ' + (time - check_time).toFixed(3) + ', ' + check_type;
+            //             list[i] = log;
+            //         }
+            //     }
+            //     else{
+            //         list[i] = log;
+            //     }
+            // }
+
+            if(color){
+                msg += "<span class='"+color+"'>" + log + "</span><br/>";
+            }
+            else{
+                msg += log + '<br/>';
+            }
+        }
+
+        /*
+        var clipboard = new ClipboardJS('#myModal .btn-primary', {
+            //container: $('#myModal .modal-body')
+            text: function(trigger) {
+                return list.join("\n");
+            }
+        });
+
+        clipboard.on('success', function(e) {
+            console.info('Action:', e.action);
+            console.info('Text:', e.text);
+            console.info('Trigger:', e.trigger);
+        
+            e.clearSelection();
+        });
+        
+        clipboard.on('error', function(e) {
+            console.error('Action:', e.action);
+            console.error('Trigger:', e.trigger);
+        });
+        */
+
+        showPopup('샷트래킹 로그 검색 결과', msg, 'Close', 'Copy', null, function(){
+            copyToClipboard(list.join("\n"));
+            /*var clipboard = new ClipboardJS('#myModal .btn-primary', {
+                //container: $('#myModal .modal-body')
+                text: function(trigger) {
+                    return $('#myModal .modal-body').html();
+                }
+            });*/
+            //clipboard.destroy();
+
+        });
+        
+    }
+
+    function copyToClipboard0(text) {
+        console.log('copyToClipboard0', text.length);
+
+        var length = text.length;
+
+        /*
+        const textArea = document.createElement("textarea");
+        document.body.appendChild(textArea);
+        textArea.value = text;
+        
+        textArea.select();
+        */
+        
+        var textArea = document.createElement('textarea');
+        textArea.value = text;
+        document.body.appendChild(textArea);
+
+        var range = document.createRange();
+        range.selectNodeContents(textArea);
+        
+        var selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+        
+        textArea.setSelectionRange(0, length);
+
+        document.execCommand('copy');
+
+        setTimeout(function(){
+            document.body.removeChild(textArea);
+        }, 2000);
+        
+    }
+
+    // return a promise
+    function copyToClipboard(textToCopy) {
+        console.log('copyToClipboard', textToCopy.length);
+
+        // navigator clipboard api needs a secure context (https)
+        if (navigator.clipboard && window.isSecureContext) {
+            // navigator clipboard api method'
+            navigator.clipboard.writeText(textToCopy)
+            .then(() => {
+                console.log("Text copied to clipboard...")
+            })
+            .catch(err => {
+                console.log('Something went wrong', err);
+            });
+        } else {
+            // text area method
+            let textArea = document.createElement("textarea");
+            textArea.value = textToCopy;
+            // make the textarea out of viewport
+            textArea.style.position = "fixed";
+            textArea.style.left = "-999999px";
+            textArea.style.top = "-999999px";
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            new Promise((res, rej) => {
+                // here the magic happens
+                document.execCommand('copy') ? res() : rej();
+                textArea.remove();
+            })
+            .then(() => {
+                console.log("Text copied to clipboard...")
+            })
+            .catch(err => {
+                console.log('Something went wrong', err);
+            });
+        }
+    }
+
+    function copyToClipboard1(text) {
+        console.log('copyToClipboard', text.length);
+
+        //var content = document.getElementById('textArea').innerHTML;
+
+        navigator.clipboard.writeText(text)
+        .then(() => {
+            console.log("Text copied to clipboard...")
+        })
+        .catch(err => {
+            console.log('Something went wrong', err);
+        });
+        
+    }
+
+    function showToast(msg){
+        if(!msg){
+            return;
+        }
+
+        $('#myToast .toast-body').html(msg);
+        $('#myToast').toast('show', {delay:5000})
+    }
+
+    function showPopup(title, message, btn1, btn2, event1, event2) {
+        //$('#myModal').on('shown.bs.modal', function () {
+            //$('#myInput').trigger('focus');
+        //});
+
+        $('#myModal .modal-title').html(title);
+        $('#myModal .modal-body').html(message);
+
+        if(!btn1){
+            $('#myModal .btn-secondary').html('Close');
+        }
+        else{
+            $('#myModal .btn-secondary').html('Close');
+        }
+
+        if(!btn2){
+            $('#myModal .btn-primary').hide();
+        }
+        else{
+            $('#myModal .btn-primary').show();
+            $('#myModal .btn-primary').html(btn2);
+        }
+
+        if(event1){
+            $('#myModal .btn-secondary').on('click', event1);
+        }
+        else{
+            $('#myModal .btn-secondary').on('click', function(){
+                $('#myModal').modal('hide');
+            });
+        }
+
+        if(event2){
+            $('#myModal .btn-primary').on('click', event2);
+        }
+        else{
+            $('#myModal .btn-primary').on('click', function(){
+                $('#myModal').modal('hide');
+            });
+        }
+
+        $('#myModal').modal('show');
+    }
+
+    function parseFile(contents) {
+        var low,
+            stIdx,
+            endIdx;
+
+        logs = [];
+        
+        
+        if(!contents){
+
+        }
+        else if(Array.isArray(contents)){
+            logs = contents;
+        }
+        else if(typeof contents === 'object'){
+            var keys = Object.keys(contents);
+            logs = [];
+            for(var i = 0; i < keys.length; i++){
+                var key = keys[i];
+                if(!key){
+                    continue;
+                }
+
+                var value = contents[key];
+                if(!value){
+                    continue;
+                }
+                logs.push(value);
+            }
+        }
+        else{
+            logs = contents.split('\n');
+        }
+        
+
+        if(!logs || logs.length == 0){
+            alert('로그파일의 정보를 읽어오는데 실패하였습니다!\n다시 확인 후 이용해주세요!');
+            return;
+        }
+
+        console.log('logs', logs.length);
+        var holeNum = 0;
+
+        var holenum_view = false; //document.getElementById('holenum_view').checked;
+
+        var hole_find = "";
+        var hole_update = "";
+
+        for (low = 0; low < logs.length; low++) {
+            var log = logs[low];
+            if(!log){
+                continue;
+            }
+            log = log.trim();
+            if(log.length == 0){
+                continue;
+            }
+
+            if(log.search(/\d{2}:\d{2}:\d{2}/) === 0){
+                stIdx = log.search(/ I gps\:/);
+                if (stIdx > 0) {
+                    endIdx = log.length;
+                    var gpsString = log.substring(stIdx + 7, endIdx).split(' ');
+                    gpsLogList.push({
+                        latitude: parseFloat(gpsString[0].split(',')[0]),
+                        longitude: parseFloat(gpsString[0].split(',')[1]),
+                        altitude: parseInt(gpsString[0].split(',')[2]),
+                        errorRange: parseInt(gpsString[1]),
+                        timeStamp: parseInt(gpsString[2])
+                    });
+                }
+                else if (log.search(/ I gps-manager gps\:/) > 0) {
+                    stIdx = log.search(/ I gps-manager gps\:/);
+                    endIdx = log.length;
+                    var gpsString = log.substring(stIdx + 19, endIdx).split(' ');
+                    gpsLogList.push({
+                        latitude: parseFloat(gpsString[0].split(',')[0]),
+                        longitude: parseFloat(gpsString[0].split(',')[1]),
+                        altitude: parseInt(gpsString[0].split(',')[2]),
+                        errorRange: parseInt(gpsString[1]),
+                        timeStamp: parseInt(gpsString[2])
+                    });
+                }
+                if (log.search(/ I navigation/) > 0) {
+                    endIdx = log.length;
+                    if (gpsLogList.length > 0 && gpsLogList[gpsLogList.length - 1].errorRange > 0 && gpsLogList[gpsLogList.length - 1].errorRange < 30) {
+                        /*addInfo({
+                            lat: gpsLogList[gpsLogList.length - 1].latitude,
+                            lng: gpsLogList[gpsLogList.length - 1].longitude
+                        }, '<span style="color:#0b264c">' + log.substring(log.search(/ I navigation/) + 14, endIdx) + '</span>');
+                        */
+                        /*new window.google.maps.InfoWindow({
+                            content: '<span style="color:#0b264c">' + log.substring(log.search(/ I navigation/) + 14, endIdx) + '</span>',
+                            position: {
+                                lat: gpsLogList[gpsLogList.length - 1].latitude,
+                                lng: gpsLogList[gpsLogList.length - 1].longitude
+                            },
+                            map: null
+                        });*/
+                    }
+                }
+                if (log.search(/ I getPressureSensorData/) > 0 || log.search(/ I gsd/) > 0) {
+                    stIdx = log.search(/ I getPressureSensorData\:/) || log.search(/ I gsd\:/);
+                    endIdx = log.length;
+                    var pressureInfo = log.substring(stIdx, endIdx).split(' ');
+                    // ["", "I", "getPressureSensorData:", "987.245", "37.67888,127.21899,252", "-18445238203847130"]
+                    var pressureGpsString = pressureInfo[4].split(',');
+                    var pressureCoordinate = {
+                        latitude: parseFloat(pressureGpsString[0]),
+                        longitude: parseFloat(pressureGpsString[1])
+                    };
+                    window.pressureList.push({pos: pressureCoordinate, pressure: parseFloat(pressureInfo[3])});
+                }
+                if (log.search(/com.golfbuddy.smartcaddie.ACTION_HOLEOUT/) > 0) {
+                    if (gpsLogList.length > 0) {
+                        var txt = log.substring(log.search(/com.golfbuddy.smartcaddie.ACTION_HOLEOUT/) + 'com.golfbuddy.smartcaddie.ACTION_HOLEOUT'.length).trim();
+                        if(txt && hole_update != txt){
+                            hole_update = txt;
+                            gpsLogList[gpsLogList.length - 1]["text"] = txt;
+                            console.log("add text", gpsLogList[gpsLogList.length - 1]);
+                        }
+                    }
+                }
+                if (log.search(/com.golfbuddy.smartcaddie.ACTION_HOLE_FIND/) > 0) {
+                    if (gpsLogList.length > 0) {
+                        var txt = log.substring(log.search(/com.golfbuddy.smartcaddie.ACTION_HOLE_FIND/) + 'com.golfbuddy.smartcaddie.ACTION_HOLE_FIND'.length).trim();
+                        if(txt && hole_find != txt){
+                            hole_find = txt;
+                            gpsLogList[gpsLogList.length - 1]["text"] = txt;
+                            console.log("add text", gpsLogList[gpsLogList.length - 1]);
+                        }
+                    }
+                } 
+                if (log.search(/com.golfbuddy.smartcaddie.ACTION_DISTANCE_UPDATE/) > 0) {
+                    if (gpsLogList.length > 0) {
+                        var txt = log.substring(log.search(/com.golfbuddy.smartcaddie.ACTION_DISTANCE_UPDATE/) + 'com.golfbuddy.smartcaddie.ACTION_DISTANCE_UPDATE update'.length).trim();
+                        if(txt && hole_update != txt){
+                            hole_update = txt;
+                            //gpsLogList[gpsLogList.length - 1]["text"] = txt;
+                            //console.log("add text", gpsLogList[gpsLogList.length - 1]);
+                        }
+                    }
+                }
+                if (log.search(/ <- /) > 0) {
+                    if (gpsLogList.length > 0) {
+                        var txt = log.trim();
+                        if(txt){
+                            var gpsLog = JSON.parse(JSON.stringify(gpsLogList[gpsLogList.length - 1]));
+                            gpsLog["text"] = txt;
+                            gpsLogList.push(gpsLog);
+                            console.log("add text", gpsLogList[gpsLogList.length - 1]);
+                        }
+                    }
+                }
+
+                //13:57:22.744 I round-data setTracking 4 ShotTrackingList(clubId=0, clubName=null, locationX=127.1448812, locationY=37.2161183, locationZ=189.69700622558594, loft=0.0, shotNo=0, shotType='whs', locationType='2')
+                if (log.search(/round-data setTracking: /) > 0) {
+                    var txt = log.substring(log.search(/round-data setTracking: /) + 'round-data setTracking: '.length).trim();
+                    if(txt){
+                        var title = '';
+                        var lat = 0.0;
+                        var lng = 0.0;
+
+                        // shotLogList.push({
+                        //     latitude: lat,
+                        //     longitude: lng,
+                        //     text: info
+                        // });
+
+                        var splits = txt.split(' ');
+                        if(splits.length > 1){
+                            title += "H" + splits[0].trim();
+                            title += ":" + splits[1].trim();
+
+                            for(var i = 2; i < splits.length; i++){
+                                var str = splits[i].trim();
+                                if(!str){
+                                    continue;
+                                }
+                                if(str.indexOf("location:") > -1){
+                                    str = str.substring(str.indexOf("location:") + "location:".length);
+                                    str = str.replaceAll("'", "").trim();
+                                    str = str.replaceAll(")", "").trim();
+
+                                    if(str){
+                                        title += ":" + str;
+                                    }
+                                }
+                                else if(str.indexOf("type:") > -1){
+                                    str = str.substring(str.indexOf("type:") + "type:".length);
+                                    str = str.replaceAll("'", "").trim();
+                                    str = str.replaceAll(")", "").trim();
+
+                                    if(str){
+                                        title += ":" + str;
+                                    }
+                                }
+                                else if(str.indexOf("longitude:") > -1){
+                                    str = str.substring(str.indexOf("longitude:") + "longitude:".length);
+                                    str = str.replaceAll(",", "").trim();
+                                    if(str){
+                                        lng = parseFloat(str);
+                                    }
+                                }
+                                else if(str.indexOf("latitude:") > -1){
+                                    str = str.substring(str.indexOf("latitude:") + "latitude:".length);
+                                    str = str.replaceAll(",", "").trim();
+                                    if(str){
+                                        lat = parseFloat(str);
+                                    }
+                                }
+                            }
+                        }
+
+                        if(lat != 0.0 && lng != 0.0){
+                            const pin = new google.maps.marker.PinElement({
+                                glyph: title,
+                                glyphColor: "red",
+                                scale: 1.0,
+                                background: "#0000ff",
+                            });
+
+                            addMarker(new window.google.maps.LatLng(lat, lng), title, pin.element);
+                        }
+                    }
+                }
+            }
+            else if(log.search(/\d+\t/) === 0){
+                var rows = log.split('\t');
+                if(!rows || rows.length < 9){
+                    continue;
+                }
+
+                var lat = parseFloat(rows[3]);
+                var lng = parseFloat(rows[4]);
+                var altitude = 0;//parseInt(rows[9] || 0);
+                var errorRange = 0;//parseInt(10);
+                var color = rgb(0, 256, rows[2] === 'On' ? 255:128);
+                var scale = (parseInt(rows[5]) > 0 && parseInt(rows[5]) < 100 ? parseInt(rows[5]) : 3);
+                var text = '';//rows[8];
+                
+                if(rows[7] != 'A1' && rows[7] != ''){
+                    var colors = ['blue', 'purple', 'pink', 'orange', 'yellow', 'cyan', 'white', 'gray'];
+                    var num = parseInt(rows[7]);
+                    if(num > 0 && num < 8){
+                        color = colors[num - 1];
+                    }
+                }
+
+                if(rows[8] != 'A2' && rows[8] != ''){
+                    text = rows[8];
+                }
+
+                if(holenum_view && holeNum != parseInt(rows[1])){
+                    holeNum = parseInt(rows[1]);
+                    if(holeNum > 0 && holeNum <= 18){
+                        text = '<span style="color:#0b264c">' + 'Hole ' + holeNum + '</span>';
+
+                        //addInfo({
+                        //        lat: gpsLogList[gpsLogList.length - 1].latitude,
+                        //        lng: gpsLogList[gpsLogList.length - 1].longitude
+                        //    }, '<span style="color:#0b264c">' + 'Hole ' + holeNum + '</span>');
+                        /*new window.google.maps.InfoWindow({
+                            content: '<span style="color:#0b264c">' + 'Hole ' + holeNum + '</span>',
+                            position: {
+                                lat: gpsLogList[gpsLogList.length - 1].latitude,
+                                lng: gpsLogList[gpsLogList.length - 1].longitude
+                            },
+                            map: window.map
+                        });
+                        */
+                    }
+                }
+
+                gpsLogList.push({
+                    latitude: lat,
+                    longitude: lng,
+                    altitude: altitude,
+                    errorRange: errorRange,
+                    //timeStamp: parseInt(rows[2]),
+                    color: color,
+                    scale: scale,
+                    text: text
+                });
+
+                
+
+            }
+        }
+    }
+
+    function initPage() {
+        if (!window.tizen) {
+            
+            var googleMapTag = window.document.createElement('script'),
+                scriptTag = window.document.getElementsByTagName('script')[0];
+
+            googleMapTag.type = 'text/javascript';
+            googleMapTag.async = true;
+            googleMapTag.src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyB0s4SAOjrixEhI52rUF5omtImJ4wgk38Y&callback=initMap&loading=async&time=' + (new window.Date().getTime());
+            //scriptTag.parentNode.insertBefore(googleMapTag, scriptTag);
+            window.document.body.appendChild(googleMapTag);
+
+            window.initMap = async function () {
+            
+                // 골프존카운티 안성 H
+                window.latitude = 37.0948985;
+                window.longitude = 127.336338;
+
+                var myLatlng = new window.google.maps.LatLng(window.latitude, window.longitude),
+                    mapOptions = {
+                        mapId: 'DEMO_MAP_ID',
+                        zoom: 16,
+                        center: myLatlng,
+                        mapTypeControl: true,
+                        mapTypeControlOptions: {
+                            style: window.google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
+                            position: window.google.maps.ControlPosition.TOP_RIGHT
+                        },
+                        mapTypeId: 'terrain',
+                        streetViewControl: false,
+                        zoomControl: true,
+                        zoomControlOptions: {
+                            position: window.google.maps.ControlPosition.RIGHT_TOP
+                        }
+                    };
+
+                // Request libraries when needed, not in the script tag.
+                const { Map } = await google.maps.importLibrary("maps");
+                const { AdvancedMarkerElement, PinElement } = await google.maps.importLibrary("marker");
+
+            
+                window.map = new window.google.maps.Map(window.document.getElementById("map"), mapOptions);
+
+                marker = new google.maps.marker.AdvancedMarkerElement({
+                    position: myLatlng,
+                    map: window.map
+                });
+
+                window.map.addListener('click', function (e) {
+                    var myLatlng = new window.google.maps.LatLng(e.latLng.lat(), e.latLng.lng());
+                    marker.position = myLatlng;
+                    
+                    document.getElementById('center-input').value = parseFloat(myLatlng.lat()).toFixed(7) + ',' + parseFloat(myLatlng.lng()).toFixed(7);
+                });
+            };
+
+            window.drawYardage = function (yardage) {
+                var courseColor = ['yellow', 'blue', 'orange', 'green', 'Gold', 'Cyan', 'LemonChiffon', 'GreenYellow'];
+                var courseColorIdx = 0;
+
+                yardage.forEach(function (val) {
+                    val.holeList.forEach(function (val, key) {
+
+                        // draw fairway
+                        val.fairwayList.forEach(function (val2) {
+                            var fairwayCoordinates = [];
+                            val2.forEach(function (val3) {
+                                fairwayCoordinates.push({lat: val3.latitude, lng: val3.longitude});
+                            });
+                            var fairwayPath = new window.google.maps.Polygon({
+                                paths: fairwayCoordinates,
+                                strokeColor: '#0000FF88',
+                                clickable: false,
+                                strokeOpacity: 1,
+                                strokeWeight: 2,
+                                fillColor: '#FF0000',
+                                fillOpacity: 0,
+                                map: window.map
+                            });
+                        });
+
+                        // draw bunker
+                        val.bunkerList.forEach(function (val2) {
+                            var bunkerCoordinates = [];
+                            val2.forEach(function (val3) {
+                                bunkerCoordinates.push({lat: val3.latitude, lng: val3.longitude});
+                            });
+                            var bunkerPath = new window.google.maps.Polygon({
+                                paths: bunkerCoordinates,
+                                strokeColor: '#00FFFF88',
+                                clickable: false,
+                                strokeOpacity: 1,
+                                strokeWeight: 2,
+                                fillColor: '#FF0000',
+                                fillOpacity: 0,
+                                map: window.map
+                            });
+                        });
+
+                        // draw green
+                        val.greenList.forEach(function (val2) {
+                            var greenCoordinates = [];
+                            val2.forEach(function (val3) {
+                                greenCoordinates.push({lat: val3.latitude, lng: val3.longitude});
+                            });
+                            var greenPath = new window.google.maps.Polygon({
+                                paths: greenCoordinates,
+                                strokeColor: '#00FF0088',
+                                clickable: false,
+                                strokeOpacity: 1,
+                                strokeWeight: 2,
+                                fillColor: '#FF0000',
+                                fillOpacity: 0,
+                                map: window.map
+                            });
+                        });
+
+                        // draw teebox
+                        val.teeboxList.forEach(function (val2) {
+                            var teeboxCoordinates = [];
+                            val2.forEach(function (val3) {
+                                teeboxCoordinates.push({lat: val3.latitude, lng: val3.longitude});
+                            });
+                            var teeboxPath = new window.google.maps.Polygon({
+                                paths: teeboxCoordinates,
+                                strokeColor: '#ffc1c1',
+                                clickable: false,
+                                strokeOpacity: 1,
+                                strokeWeight: 2,
+                                fillColor: '#FF0000',
+                                fillOpacity: 0,
+                                map: window.map
+                            });
+                        });
+                        
+                        var teeCenterElevation = '';
+                        var teeCenterList = [];
+                        val.teeLocationList.forEach(function (val) {
+                            var teeCenterCoordinate = {lat: val.latitude, lng: val.longitude};
+                            if(!teeCenterElevation && val.elevation){
+                                teeCenterElevation = val.elevation;
+                            }
+
+                            teeCenterList.push(teeCenterCoordinate);
+                            var teeCircle = new window.google.maps.Circle({
+                                strokeColor: '#ffc1c1',
+                                strokeOpacity: 0.5,
+                                strokeWeight: 1,
+                                fillColor: '#FF0000',
+                                clickable: false,
+                                fillOpacity: 0,
+                                map: window.map,
+                                center: teeCenterCoordinate,
+                                radius: 20
+                            });
+                            teeCircle = new window.google.maps.Circle({
+                                strokeColor: '#ff0000',
+                                strokeOpacity: 0.3,
+                                strokeWeight: 2,
+                                fillColor: '#FF0000',
+                                clickable: false,
+                                fillOpacity: 0,
+                                map: window.map,
+                                center: teeCenterCoordinate,
+                                radius: 10
+                            });
+                        });
+
+                        var teePath = new window.google.maps.Polyline({
+                            path: teeCenterList,
+                            geodesic: true,
+                            strokeColor: '#ffc1c1',
+                            strokeOpacity: 0.5,
+                            strokeWeight: 1,
+                            fillColor: '#FF0000',
+                            map: window.map
+                        });
+
+                        var greenCenterCoordinate = {
+                            lat: val.greenLocationList[0].center.latitude,
+                            lng: val.greenLocationList[0].center.longitude
+                        };
+
+                        var greenElevation = val.greenLocationList[0].elevation || '';
+                        var greenCircle = new window.google.maps.Circle({
+                            strokeColor: '#6cffc1',
+                            strokeOpacity: 0.8,
+                            strokeWeight: 2,
+                            fillColor: '#FF0000',
+                            clickable: false,
+                            fillOpacity: 0,
+                            map: window.map,
+                            center: greenCenterCoordinate,
+                            radius: 20
+                        });
+
+                        greenCircle = new window.google.maps.Circle({
+                            strokeColor: '#6cffc1',
+                            strokeOpacity: 0.5,
+                            strokeWeight: 2,
+                            fillColor: '#FF0000',
+                            clickable: false,
+                            fillOpacity: 0,
+                            map: window.map,
+                            center: greenCenterCoordinate,
+                            radius: 30
+                        });
+
+                        if (val.greenLocationList[1]) {
+                            greenCenterCoordinate = {
+                                lat: val.greenLocationList[1].center.latitude,
+                                lng: val.greenLocationList[1].center.longitude
+                            };
+                            greenCircle = new window.google.maps.Circle({
+                                strokeColor: '#6cffc1',
+                                strokeOpacity: 0.8,
+                                strokeWeight: 2,
+                                fillColor: '#FF0000',
+                                clickable: false,
+                                fillOpacity: 0,
+                                map: window.map,
+                                center: greenCenterCoordinate,
+                                radius: 20
+                            });
+                            greenCircle = new window.google.maps.Circle({
+                                strokeColor: '#6cffc1',
+                                strokeOpacity: 0.5,
+                                strokeWeight: 2,
+                                fillColor: '#FF0000',
+                                clickable: false,
+                                fillOpacity: 0,
+                                map: window.map,
+                                center: greenCenterCoordinate,
+                                radius: 30
+                            });
+                        }
+
+                        var centralPathCoordinates = [];
+                        val.centralPathList.forEach(function (val) {
+                            centralPathCoordinates.push({lat: val.latitude, lng: val.longitude});
+                            var centralPathCircle = new window.google.maps.Circle({
+                                strokeColor: 'skyblue',
+                                strokeOpacity: 0.5,
+                                strokeWeight: 1,
+                                fillColor: '#FF0000',
+                                clickable: false,
+                                fillOpacity: 0,
+                                map: window.map,
+                                center: {lat: val.latitude, lng: val.longitude},
+                                radius: 15
+                            });
+                        });
+                        var centralPath = new window.google.maps.Polyline({
+                            path: centralPathCoordinates,
+                            geodesic: true,
+                            strokeColor: 'skyblue',
+                            strokeWeight: 1,
+                            map: window.map
+                        });
+
+                        //addInfo(greenCenterCoordinate, '<span style="color:#0b264c">' + val.holeNumber + 'H' + '</span>');
+                        var infowindow = new window.google.maps.InfoWindow({
+                            content: '<span style="color:#0b264c">' + val.holeNumber + 'H' + '</span>',
+                            position: greenCenterCoordinate,
+                            map: window.map
+                        });
+
+                        var perimeterCoordinates = [];
+                        val.perimeterList.forEach(function (val) {
+                            perimeterCoordinates.push({lat: val.latitude, lng: val.longitude});
+                        });
+
+                        var perimeterPath = new window.google.maps.Polygon({
+                            paths: perimeterCoordinates,
+                            strokeColor: courseColor[courseColorIdx],
+                            clickable: false,
+                            strokeOpacity: 1,
+                            strokeWeight: 2,
+                            fillColor: '#FF0000',
+                            fillOpacity: 0,
+                            map: window.map
+                        });
+
+                        if (key / 8 === 1) {
+                            courseColorIdx++;
+                        }
+                    });
+
+                    // draw hazard
+                    val.hazardList.forEach(function (val, key) {
+
+                        var hazardCoordinates = [];
+                        val.forEach(function (val2) {
+                            hazardCoordinates.push({lat: val2.latitude, lng: val2.longitude});
+                        });
+                        var hazardPath = new window.google.maps.Polygon({
+                            paths: hazardCoordinates,
+                            strokeColor: '#FF00FF88',
+                            clickable: false,
+                            strokeOpacity: 1,
+                            strokeWeight: 2,
+                            fillColor: '#FF0000',
+                            fillOpacity: 0,
+                            map: window.map
+                        });
+                    });
+
+                    // draw water
+                    val.waterList.forEach(function (val, key) {
+
+                        var waterCoordinates = [];
+                        val.forEach(function (val2) {
+                            waterCoordinates.push({lat: val2.latitude, lng: val2.longitude});
+                        });
+                        var waterPath = new window.google.maps.Polygon({
+                            paths: waterCoordinates,
+                            strokeColor: '#FF000088',
+                            clickable: false,
+                            strokeOpacity: 1,
+                            strokeWeight: 2,
+                            fillColor: '#FF0000',
+                            fillOpacity: 0,
+                            map: window.map
+                        });
+                    });
+                });
+            };
+
+            window.document.getElementById('club_file').onchange = function (e) {
+                file = this.files[0],
+                reader = new window.FileReader();
+
+                reader.onload = function (e) {
+                    var txt = e.target.result;
+
+                    if(!txt || txt.length == 0){
+                        alert('클럽파일의 정보를 읽어오는데 실패하였습니다!\n다시 확인 후 이용해주세요!');
+                        return;
+                    }
+
+                    var data = JSON.parse(txt);
+                    if(!data || typeof data !== 'object'){
+                        alert('클럽파일이 JSON 형태로 되어 있는지 확인 후 이용해주세요!');
+                        return;
+                    }
+                    
+                    var courseList = data.courseList || data.courses;
+                    if(!courseList || courseList.length == 0){
+                        alert('클럽파일의 코스정보를 확인 후 이용해주세요!');
+                        return;
+                    }
+
+                    drawYardage(courseList);
+
+                };
+
+                reader.readAsText(file);
+            };
+
+            window.logs = [];
+            window.pressureList = [];
+            window.document.getElementById('file').onchange = function (e) {
+                window.gpsLogList = [],
+                    shotLogList = [],
+                    file = this.files[0],
+                    reader = new window.FileReader();
+
+                reader.onload = function (e) {
+                    
+                    var contents = '';
+                    if(file.name.endsWith('.json')){
+                        var json = JSON.parse(e.target.result);
+                        if(json && json.TXT){
+                            contents = json.TXT;
+                        }
+                    }
+                    else{
+                        contents = e.target.result;
+                    }
+
+                    deleteOverlays();
+
+                    document.getElementById('info_view').checked = false;
+
+                    gpsLogList = [];
+                    shotLogList = [];
+
+                    parseFile(contents);
+
+                    setGPSLog(gpsLogList);
+
+                };
+
+                reader.readAsText(file);
+            };
+
+        }
+    }
+    
+    $('document').ready(function(){
+        console.log('ready');
+
+        initPage();
+
+        // init toast
+        //var toastElList = [].slice.call(document.querySelectorAll('.toast'));
+        //var toastList = toastElList.map(function (toastEl) {
+        //    return new bootstrap.Toast(toastEl);
+        //});
+    });
+
+</script>
+<!-- @endif -->
+</body>
+</html>
